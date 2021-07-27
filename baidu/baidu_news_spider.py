@@ -19,6 +19,8 @@ import os
 
 from time import sleep
 from random import randint
+from lxml import html as HT
+from html.parser import HTMLParser
 
 
 def parseTime(unformatedTime):
@@ -38,39 +40,49 @@ def parseTime(unformatedTime):
 
 def dealHtml(html):
     results = html.xpath('//div[@class="result-op c-container xpath-log new-pmd"]')
+    print(html)
 
+    print(results)
     saveData = []
 
     for result in results:
         title = result.xpath('.//h3/a')[0]
+        #展示etree.xpath()
+        tree6 = HT.tostring(title[0], encoding='utf-8').decode('utf-8')
+        print(tree6)
         title = title.xpath('string(.)').strip()
 
-        summary = result.xpath('.//span[@class="c-font-normal c-color-text"]')[0]
-        summary = summary.xpath('string(.)').strip()
+        url = result.xpath('.//h3/a/@href')
+        # tree5 = HT.tostring(url[0], encoding='utf-8').decode('utf-8')
+        print(url)
+
+        # summary = result.xpath('.//span[@class="c-font-normal c-color-text"]')[0]
+        # summary = summary.xpath('string(.)').strip()
 
         # ./ 是直接下级，.// 是直接/间接下级
-        infos = result.xpath('.//div[@class="news-source"]')[0]
-        source, dateTime = infos.xpath(".//span[last()-1]/text()")[0], \
-                           infos.xpath(".//span[last()]/text()")[0]
 
-        dateTime = parseTime(dateTime)
+        # infos = result.xpath('.//div[@class="news-source"]')[0]
+        # source, dateTime = infos.xpath(".//span[last()-1]/text()")[0], \
+        #                    infos.xpath(".//span[last()]/text()")[0]
+        #
+        # dateTime = parseTime(dateTime)
 
         print('标题', title)
-        print('来源', source)
-        print('时间', dateTime)
-        print('概要', summary)
+        print('来源', url)
+        # print('时间', dateTime)
+        # print('概要', summary)
         print('\n')
 
         saveData.append({
             'title': title,
-            'source': source,
-            'time': dateTime,
-            'summary': summary
+            'url': url
+            # 'time': dateTime,
+            # 'summary': summary
         })
     with open(fileName, 'a+', encoding='utf-8-sig', newline='') as f:
         writer = csv.writer(f)
         for row in saveData:
-            writer.writerow([row['title'], row['source'], row['time'], row['summary']])
+            writer.writerow([row['title'], row['url']])
 
 
 headers = {
@@ -144,4 +156,8 @@ def doSpider(keyword, sortBy = 'focus'):
 
 
 if __name__ == "__main__":
-    doSpider(keyword = '马保国', sortBy='focus')
+    keyword=[
+        "元禾控股"
+    ]
+    for kw in keyword:
+        doSpider(keyword = kw, sortBy='focus')
